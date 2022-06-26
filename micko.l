@@ -15,13 +15,20 @@
 "if"                 { return _IF; }
 "else"               { return _ELSE; }
 "return"             { return _RETURN; }
+"foreach"            { return _FOREACH; }
+"in"                 { return _IN; }
 
 "("                  { return _LPAREN; }
 ")"                  { return _RPAREN; }
-"{"                  { return _LBRACKET; }
-"}"                  { return _RBRACKET; }
+"{"                  { return _LBRACE; }
+"}"                  { return _RBRACE; }
+"["                  { return _LBRACKET; }
+"]"                  { return _RBRACKET; }
 ";"                  { return _SEMICOLON; }
 "="                  { return _ASSIGN; }
+","                  { return _COMMA; }
+"continue"           { return _CONTINUE; }
+"break"              { return _BREAK; }
 
 "+"                  { yylval.i = ADD; return _AROP; }
 "-"                  { yylval.i = SUB; return _AROP; }

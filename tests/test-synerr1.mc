@@ -1,4 +1,15 @@
-//OPIS:
+//OPIS: break van foreach iskaza
 int main() {
-    test
+    int d;
+    int niz[7];
+    niz = { 3, 1, 4, 1, 5, 9, 2 };
+    
+    break;
+
+    d = 0;
+    foreach (int e in niz) {
+        d = 1;
+    }
+
+    return d;
 }

@@ -31,15 +31,22 @@
 %token _IF
 %token _ELSE
 %token _RETURN
+%token _FOREACH
+%token _IN
+%token _CONTINUE
+%token _BREAK
 %token <s> _ID
 %token <s> _INT_NUMBER
 %token <s> _UINT_NUMBER
 %token _LPAREN
 %token _RPAREN
+%token _LBRACE
+%token _RBRACE
 %token _LBRACKET
 %token _RBRACKET
 %token _ASSIGN
 %token _SEMICOLON
+%token _COMMA
 %token <i> _AROP
 %token <i> _RELOP
 
@@ -102,13 +109,13 @@ parameter
   ;
 
 body
-  : _LBRACKET variable_list
+  : _LBRACE variable_list
       {
         if(var_num)
           code("\n\t\tSUBS\t%%15,$%d,%%15", 4*var_num);
         code("\n@%s_body:", get_name(fun_idx));
       }
-    statement_list _RBRACKET
+    statement_list _RBRACE
   ;
 
 variable_list
@@ -124,6 +131,7 @@ variable
         else 
            err("redefinition of '%s'", $2);
       }
+  | _TYPE _ID _LBRACKET _INT_NUMBER _RBRACKET _SEMICOLON
   ;
 
 statement_list
@@ -136,10 +144,11 @@ statement
   | assignment_statement
   | if_statement
   | return_statement
+  | foreach_statement
   ;
 
 compound_statement
-  : _LBRACKET statement_list _RBRACKET
+  : _LBRACE statement_list _RBRACE
   ;
 
 assignment_statement
@@ -153,6 +162,16 @@ assignment_statement
             err("incompatible types in assignment");
         gen_mov($3, idx);
       }
+  | _ID _LBRACKET _INT_NUMBER _RBRACKET _ASSIGN num_exp _SEMICOLON
+  | _ID _ASSIGN int_array _SEMICOLON
+  ;
+
+int_array
+  : _LBRACE int_values _RBRACE
+
+int_values
+  : _INT_NUMBER
+  | int_values _COMMA _INT_NUMBER
   ;
 
 num_exp
@@ -194,6 +213,11 @@ exp
   
   | _LPAREN num_exp _RPAREN
       { $$ = $2; }
+
+  | _ID _LBRACKET _INT_NUMBER _RBRACKET
+      {
+        $$ = take_reg();
+      }
   ;
 
 literal
@@ -283,6 +307,24 @@ return_statement
         gen_mov($2, FUN_REG);
         code("\n\t\tJMP \t@%s_exit", get_name(fun_idx));        
       }
+  ;
+
+foreach_statement
+  : _FOREACH _LPAREN _TYPE _ID _IN _ID _RPAREN foreach_substatement
+  ;
+
+foreach_substatement
+  : statement
+  | break_statement
+  | continue_statement
+  ;
+
+break_statement
+  : _BREAK _SEMICOLON
+  ;
+
+continue_statement
+  : _CONTINUE _SEMICOLON
   ;
 
 %%

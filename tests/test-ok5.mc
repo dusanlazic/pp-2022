@@ -6,7 +6,8 @@ int main() {
     int c;
     int d;
 
-    int niz[7] = { 3, 1, 4, 1, 5, 9, 2 };
+    int niz[7];
+    niz = { 3, 1, 4, 1, 5, 9, 2 };
     
     a = niz[0];
     b = niz[3];

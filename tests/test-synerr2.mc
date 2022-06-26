@@ -1,17 +1,14 @@
-//OPIS: for each petlja sa break
-//RETURN: 9
+//OPIS: continue van foreach iskaza
 int main() {
     int d;
-
     int niz[7];
     niz = { 3, 1, 4, 1, 5, 9, 2 };
     
+    continue;
+
     d = 0;
     foreach (int e in niz) {
-        if (e > 4)
-            break;
-
-        d = d + e;
+        d = 1;
     }
 
     return d;
