@@ -1,0 +1,4 @@
+//OPIS:
+int main() {
+    test
+}
