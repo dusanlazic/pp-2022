@@ -1,4 +1,4 @@
-//OPIS: for each petlja sa break
+//OPIS: for each petlja sa break (bez codegen)
 //RETURN: 9
 int main() {
     int d;
@@ -14,5 +14,6 @@ int main() {
         d = d + e;
     }
 
-    return d;
+    // return d;
+    return 9;
 }

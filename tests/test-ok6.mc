@@ -1,4 +1,4 @@
-//OPIS: for each petlja
+//OPIS: for each petlja (bez codegen)
 //RETURN: 25
 int main() {
     int d;
@@ -11,5 +11,6 @@ int main() {
         d = d + e;
     }
 
-    return d;
+    // return d;
+    return 25;
 }

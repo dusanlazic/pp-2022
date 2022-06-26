@@ -20,6 +20,8 @@
   int fcall_idx = -1;
   int lab_num = -1;
   int toggle_array[5]; // map for getting corresponding array/non-array types
+  int force_array[5]; // map for getting array type from any type
+  int ignore_array[5]; // map for getting non-array type from any type
   int num_of_elements = 0; // number of given elements when assigning values to an array
   int array_type = 0;
   FILE *output;
@@ -68,6 +70,16 @@ program
         toggle_array[3] = 1; // INT_ARRAY  => INT
         toggle_array[2] = 4; // UINT       => UINT_ARRAY
         toggle_array[4] = 2; // UINT_ARRAY => UINT 
+
+        force_array[1] = 3; // INT        => INT_ARRAY
+        force_array[3] = 3; // INT_ARRAY  => INT_ARRAY
+        force_array[2] = 4; // UINT       => UINT_ARRAY
+        force_array[4] = 4; // UINT_ARRAY => UINT_ARRAY 
+
+        ignore_array[1] = 1; // INT        => INT
+        ignore_array[3] = 1; // INT_ARRAY  => INT
+        ignore_array[2] = 2; // UINT       => UINT
+        ignore_array[4] = 2; // UINT_ARRAY => UINT 
       }
   function_list
       {  
@@ -166,33 +178,39 @@ compound_statement
   ;
 
 assignment_statement
+
+  // a = niz[0];
   : _ID _ASSIGN num_exp _SEMICOLON
       {
         int idx = lookup_symbol($1, VAR|PAR);
         if(idx == NO_INDEX)
           err("invalid lvalue '%s' in assignment", $1);
         else
-          if(get_type(idx) != get_type($3))
-            err("incompatible types in assignment");
+          if(get_type(idx) != ignore_array[get_type($3)])
+            err("incompatible types in assignment bato");
         gen_mov($3, idx);
       }
-  | _ID _LBRACKET _INT_NUMBER _RBRACKET _ASSIGN num_exp _SEMICOLON
+
+  // niz[0] = 5;
+  | _ID _LBRACKET _INT_NUMBER _RBRACKET _ASSIGN num_exp _SEMICOLON // 
       {
         int idx = lookup_symbol($1, VAR|PAR);
         if (idx == NO_INDEX)
           err("invalid lvalue '%s' in assignment", $1);
         else
-          if(toggle_array[get_type(idx)] != get_type($6))
+          if(ignore_array[get_type(idx)] != get_type($6))
             err("incompatible types in assignment");
         // TODO: assign value
       }
+
+  // niz = { 3, 1, 4, 1 };
   | _ID _ASSIGN
       {
         int idx = lookup_symbol($1, VAR|PAR);
         if (idx == NO_INDEX)
           err("invalid lvalue '%s' in assignment", $1);
         
-        array_type = toggle_array[get_type(idx)];
+        array_type = ignore_array[get_type(idx)];
         $<i>$ = idx;
       }
     array _SEMICOLON
@@ -203,7 +221,6 @@ assignment_statement
           err("array length is %d, %d elements given", arr_len, num_of_elements);
       
         // TODO: assign values
-        // TODO: support unsigned
       }
     
   ;
@@ -273,7 +290,15 @@ exp
 
   | _ID _LBRACKET _INT_NUMBER _RBRACKET
       {
-        $$ = take_reg();
+        int idx = lookup_symbol($1, VAR|PAR);
+        if (idx == NO_INDEX)
+          err("invalid lvalue '%s' in assignment", $1);
+
+        int arr_len = get_atr2(idx);
+        if(atoi($3) >= arr_len)
+          err("index out of bounds: %d > %d", atoi($3), arr_len - 1);
+
+        $$ = idx;
       }
   ;
 
