@@ -1,13 +1,13 @@
-//OPIS: break van foreach iskaza
+//OPIS: continue van foreach iskaza
 int main() {
     int d;
     int niz[7];
     niz = { 3, 1, 4, 1, 5, 9, 2 };
     
-    break;
+    continue;
 
     d = 0;
-    foreach (int e in niz) {
+    foreach (int e : niz) {
         d = 1;
     }
 

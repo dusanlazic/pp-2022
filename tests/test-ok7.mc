@@ -7,10 +7,8 @@ int main() {
     niz = { 3, 1, 4, 1, 5, 9, 2 };
     
     d = 0;
-    foreach (int e in niz) {
-        if (e == 1)
-            continue;
-
+    foreach (int e : niz) {
+        continue;
         d = d + e;
     }
 

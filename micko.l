@@ -16,7 +16,6 @@
 "else"               { return _ELSE; }
 "return"             { return _RETURN; }
 "foreach"            { return _FOREACH; }
-"in"                 { return _IN; }
 
 "("                  { return _LPAREN; }
 ")"                  { return _RPAREN; }
@@ -25,6 +24,7 @@
 "["                  { return _LBRACKET; }
 "]"                  { return _RBRACKET; }
 ";"                  { return _SEMICOLON; }
+":"                  { return _COLON; }
 "="                  { return _ASSIGN; }
 ","                  { return _COMMA; }
 "continue"           { return _CONTINUE; }

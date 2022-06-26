@@ -24,6 +24,7 @@
   int ignore_array[5]; // map for getting non-array type from any type
   int num_of_elements = 0; // number of given elements when assigning values to an array
   int array_type = 0;
+  int inside_foreach = 0;
   FILE *output;
 %}
 
@@ -37,7 +38,7 @@
 %token _ELSE
 %token _RETURN
 %token _FOREACH
-%token _IN
+%token _COLON
 %token _CONTINUE
 %token _BREAK
 %token <s> _ID
@@ -171,6 +172,8 @@ statement
   | if_statement
   | return_statement
   | foreach_statement
+  | break_statement
+  | continue_statement
   ;
 
 compound_statement
@@ -187,7 +190,7 @@ assignment_statement
           err("invalid lvalue '%s' in assignment", $1);
         else
           if(get_type(idx) != ignore_array[get_type($3)])
-            err("incompatible types in assignment bato");
+            err("incompatible types in assignment");
         gen_mov($3, idx);
       }
 
@@ -392,21 +395,48 @@ return_statement
   ;
 
 foreach_statement
-  : _FOREACH _LPAREN _TYPE _ID _IN _ID _RPAREN foreach_substatement
-  ;
-
-foreach_substatement
-  : statement
-  | break_statement
-  | continue_statement
+  : _FOREACH _LPAREN _TYPE _ID 
+      {
+        inside_foreach = 1;
+        int temp = lookup_symbol($4, VAR|PAR);
+        if (temp != NO_INDEX)
+          err("redefinition of variable '%s'", $4);
+      }
+  _COLON _ID
+      {
+        int idx = lookup_symbol($7, VAR|PAR);
+        if (idx == NO_INDEX)
+          err("array '%s' is not defined", $7);
+        else
+          if($3 != ignore_array[get_type(idx)] ||
+             get_type(idx) != force_array[$3])
+            err("incompatible types in foreach statement");
+          else
+            $<i>$ = insert_symbol($4, VAR, $3, 1, NO_ATR);
+      }
+  _RPAREN compound_statement
+      {
+        clear_symbols($<i>8);
+        inside_foreach = 0;
+      }
   ;
 
 break_statement
-  : _BREAK _SEMICOLON
+  :
+    {
+      if(!inside_foreach)
+        err("break statement outside foreach");
+    } 
+  _BREAK _SEMICOLON
   ;
 
 continue_statement
-  : _CONTINUE _SEMICOLON
+  :
+    {
+      if(!inside_foreach)
+        err("continue statement outside foreach");
+    }
+  _CONTINUE _SEMICOLON
   ;
 
 %%
