@@ -19,6 +19,9 @@
   int fun_idx = -1;
   int fcall_idx = -1;
   int lab_num = -1;
+  int toggle_array[5]; // map for getting corresponding array/non-array types
+  int num_of_elements = 0; // number of given elements when assigning values to an array
+  int array_type = 0;
   FILE *output;
 %}
 
@@ -59,7 +62,14 @@
 %%
 
 program
-  : function_list
+  : 
+      {
+        toggle_array[1] = 3; // INT        => INT_ARRAY
+        toggle_array[3] = 1; // INT_ARRAY  => INT
+        toggle_array[2] = 4; // UINT       => UINT_ARRAY
+        toggle_array[4] = 2; // UINT_ARRAY => UINT 
+      }
+  function_list
       {  
         if(lookup_symbol("main", FUN) == NO_INDEX)
           err("undefined reference to 'main'");
@@ -132,6 +142,10 @@ variable
            err("redefinition of '%s'", $2);
       }
   | _TYPE _ID _LBRACKET _INT_NUMBER _RBRACKET _SEMICOLON
+      {
+        if(lookup_symbol($2, VAR|PAR) == NO_INDEX)
+          insert_symbol($2, VAR, toggle_array[$1], ++var_num, atoi($4));
+      }
   ;
 
 statement_list
@@ -163,15 +177,58 @@ assignment_statement
         gen_mov($3, idx);
       }
   | _ID _LBRACKET _INT_NUMBER _RBRACKET _ASSIGN num_exp _SEMICOLON
-  | _ID _ASSIGN int_array _SEMICOLON
+      {
+        int idx = lookup_symbol($1, VAR|PAR);
+        if (idx == NO_INDEX)
+          err("invalid lvalue '%s' in assignment", $1);
+        else
+          if(toggle_array[get_type(idx)] != get_type($6))
+            err("incompatible types in assignment");
+        // TODO: assign value
+      }
+  | _ID _ASSIGN
+      {
+        int idx = lookup_symbol($1, VAR|PAR);
+        if (idx == NO_INDEX)
+          err("invalid lvalue '%s' in assignment", $1);
+        
+        array_type = toggle_array[get_type(idx)];
+        $<i>$ = idx;
+      }
+    array _SEMICOLON
+      {
+        int arr_len = get_atr2($<i>3);
+
+        if(arr_len != num_of_elements)
+          err("array length is %d, %d elements given", arr_len, num_of_elements);
+      
+        // TODO: assign values
+        // TODO: support unsigned
+      }
+    
   ;
 
-int_array
-  : _LBRACE int_values _RBRACE
+array
+  :
+  { num_of_elements = 0; }
+  _LBRACE array_values _RBRACE
+  ;
 
-int_values
-  : _INT_NUMBER
-  | int_values _COMMA _INT_NUMBER
+array_values
+  : literal // TODO: try with exp instead of literal to support things like { a, f(5), 5 }
+      { 
+        if(get_type($1) != array_type) {
+          err("invalid element type");
+        }
+        num_of_elements += 1; 
+      }
+  | array_values _COMMA literal
+      { 
+        if(get_type($3) != array_type) {
+          err("invalid element type");
+        }
+        num_of_elements += 1; 
+      }
   ;
 
 num_exp
