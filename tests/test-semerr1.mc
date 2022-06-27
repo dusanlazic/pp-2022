@@ -4,7 +4,7 @@ int main() {
     int niz[7];
 	unsigned a;
 
-	a = 5;
+	a = 5U;
 
     niz[0] = a;
 

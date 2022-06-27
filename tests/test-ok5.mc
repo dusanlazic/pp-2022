@@ -1,19 +1,15 @@
-//OPIS: pristup elementu niza preko indeksa
-//RETURN: 6
+//OPIS: for each petlja
+//RETURN: 7
 int main() {
-    int a;
-    int b;
-    int c;
-    int d;
-
+    int i;
     int niz[7];
+
     niz = { 3, 1, 4, 1, 5, 9, 2 };
     
-    a = niz[0];
-    b = niz[3];
-    c = niz[6];
+    i = 0;
+    foreach (int e : niz) {
+        i = i + 1;
+    }
 
-    d = a + b + c;
-
-    return d;
+    return i;
 }

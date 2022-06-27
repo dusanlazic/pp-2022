@@ -1,21 +1,16 @@
 //OPIS: pristup elementu niza preko indeksa
-//RETURN: 306
+//RETURN: 207
 int main() {
-    int a;
-    int b;
-    int c;
-    int d;
-    int niz[7];
-    
-    niz[0] = 101;
-    niz[3] = 102;
-    niz[6] = 103;
-    
-    a = niz[0];
-    b = niz[3];
-    c = niz[6];
+    int a[7];
+    int b[7];
+    int ea;
+    int eb;
 
-    d = a + b + c;
+    a = { 100, 101, 102, 103, 104, 105, 106 };
+    b[4] = 104;
 
-    return d;
+    ea = a[3];
+    eb = b[4];
+
+    return ea + eb;
 }

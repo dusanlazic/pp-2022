@@ -2,9 +2,10 @@
 //RETURN: 103
 int main() {
     int niz[7];
-    niz[0] = 101;
-    niz[3] = 102;
-    niz[6] = 103;
+    
+    niz[0] = 100;
+    niz[3] = 103;
+    niz[6] = 106;
 
-    return niz[6];
+    return niz[3];
 }

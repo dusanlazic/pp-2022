@@ -1,17 +1,23 @@
 //OPIS: for each petlja sa continue
-//RETURN: 23
+//RETURN: 2
 int main() {
-    int d;
-
+    int i;
+    int a;
     int niz[7];
+
     niz = { 3, 1, 4, 1, 5, 9, 2 };
     
-    d = 0;
+    i = 0;
+    a = 0;
     foreach (int e : niz) {
-        if (e == 1)
+        if (i <= 4) {
+            i = i + 1;
             continue;
-        d = d + e;
+        }
+
+        a = a + 1;
+        i = i + 1;
     }
 
-    return d;
+    return a;
 }

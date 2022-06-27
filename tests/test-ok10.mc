@@ -1,13 +1,18 @@
-//OPIS: deklaracija niza
-//RETURN: 1333
+//OPIS: pristup elementu niza kroz koji se iterira - ne radi :(
+//RETURN: 59
 int main() {
-    int f[5];
-    int a;
-    int b;
-    int c;
-    f[0] = 1331;
-    f[1] = 1332;
-    f[2] = 1333;
+    int sum;
+    int niz[12];
 
-    return f[2];
+    niz = { 1, 1, 2, 8, 9, 9, 7, 2, 9, 9, 8, 1 };
+    
+    sum = 0;
+    foreach (int e : niz) {
+        if (e < 7)
+            continue;
+
+        sum = sum + e;
+    }
+
+    return sum;
 }

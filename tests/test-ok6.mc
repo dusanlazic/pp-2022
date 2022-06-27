@@ -1,15 +1,18 @@
-//OPIS: for each petlja
-//RETURN: 25
+//OPIS: for each petlja sa break
+//RETURN: 3
 int main() {
-    int d;
-
+    int i;
     int niz[7];
+
     niz = { 3, 1, 4, 1, 5, 9, 2 };
     
-    d = 0;
+    i = 0;
     foreach (int e : niz) {
-        d = d + e;
+        if (i >= 3)
+            break;
+
+        i = i + 1;
     }
 
-    return d;
+    return i;
 }

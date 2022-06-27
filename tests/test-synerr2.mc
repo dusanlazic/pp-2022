@@ -1,5 +1,4 @@
-//OPIS: više foreach petlji
-//RETURN: 27
+//OPIS: razmak u foreach
 int main() {
     int a;
     int prvi[7];
@@ -9,12 +8,8 @@ int main() {
     drugi = { 1, 2, 3, 4, 5, 6, 5, 4, 3, 2};
     
     a = 0;
-    foreach (int e : prvi) {
-        a = a + 1;
-    }
-
-    foreach (int e : drugi) {
-        a = a + 2;
+    for each (int e : prvi) {
+        a = a + e;
     }
 
     return a;
