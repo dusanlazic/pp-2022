@@ -50,6 +50,21 @@ void gen_sym_name(int index) {
   }
 }
 
+void gen_sym_name_offset(int index, int offset) {
+  if(index > -1) {
+    if(get_kind(index) == VAR) // -n*4(%14)
+      code("-%d(%%14)", (get_atr1(index) + offset) * 4);
+    else 
+      if(get_kind(index) == PAR) // m*4(%14)
+        code("%d(%%14)", 4 + (get_atr1(index) + offset) *4);
+      else
+        if(get_kind(index) == LIT)
+          code("$%s", get_name(index));
+        else //function, reg
+          code("%s", get_name(index));
+  }
+}
+
 // OTHER
 
 void gen_cmp(int op1_index, int op2_index) {
@@ -74,5 +89,12 @@ void gen_mov(int input_index, int output_index) {
   if(output_index >= 0 && output_index <= LAST_WORKING_REG)
     set_type(output_index, get_type(input_index));
   free_if_reg(input_index);
+}
+
+void gen_mov_offset(int input_index, int output_index, int input_offset, int output_offset) {
+  code("\n\t\tMOV \t");
+  gen_sym_name_offset(input_index, input_offset);
+  code(",");
+  gen_sym_name_offset(output_index, output_offset);
 }
 

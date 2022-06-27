@@ -19,9 +19,12 @@
   int fun_idx = -1;
   int fcall_idx = -1;
   int lab_num = -1;
+  int offset = 0;
+  int array_idx = -1;
   int toggle_array[5]; // map for getting corresponding array/non-array types
   int force_array[5]; // map for getting array type from any type
   int ignore_array[5]; // map for getting non-array type from any type
+  int is_array[5]; // map for determining if given type is array or non-array
   int num_of_elements = 0; // number of given elements when assigning values to an array
   int array_type = 0;
   int inside_foreach = 0;
@@ -67,6 +70,8 @@
 program
   : 
       {
+        // Type maps
+
         toggle_array[1] = 3; // INT        => INT_ARRAY
         toggle_array[3] = 1; // INT_ARRAY  => INT
         toggle_array[2] = 4; // UINT       => UINT_ARRAY
@@ -81,6 +86,11 @@ program
         ignore_array[3] = 1; // INT_ARRAY  => INT
         ignore_array[2] = 2; // UINT       => UINT
         ignore_array[4] = 2; // UINT_ARRAY => UINT 
+
+        is_array[1] = 0;  // INT        => false
+        is_array[2] = 0;  // UINT       => false
+        is_array[3] = 1;  // INT_ARRAY  => true
+        is_array[4] = 1;  // UINT_ARRAY => true 
       }
   function_list
       {  
@@ -156,8 +166,10 @@ variable
       }
   | _TYPE _ID _LBRACKET _INT_NUMBER _RBRACKET _SEMICOLON
       {
-        if(lookup_symbol($2, VAR|PAR) == NO_INDEX)
+        if(lookup_symbol($2, VAR|PAR) == NO_INDEX) {
           insert_symbol($2, VAR, toggle_array[$1], ++var_num, atoi($4));
+          var_num += atoi($4);
+        }
       }
   ;
 
@@ -182,7 +194,7 @@ compound_statement
 
 assignment_statement
 
-  // a = niz[0];
+  // a = niz[0]; || a = 5; || ...
   : _ID _ASSIGN num_exp _SEMICOLON
       {
         int idx = lookup_symbol($1, VAR|PAR);
@@ -191,7 +203,11 @@ assignment_statement
         else
           if(get_type(idx) != ignore_array[get_type($3)])
             err("incompatible types in assignment");
-        gen_mov($3, idx);
+        
+        if(is_array[get_type($3)])
+          gen_mov_offset($3, idx, offset, 0);
+        else
+          gen_mov($3, idx);
       }
 
   // niz[0] = 5;
@@ -203,7 +219,7 @@ assignment_statement
         else
           if(ignore_array[get_type(idx)] != get_type($6))
             err("incompatible types in assignment");
-        // TODO: assign value
+        gen_mov_offset($6, idx, 0, atoi($3));
       }
 
   // niz = { 3, 1, 4, 1 };
@@ -214,16 +230,14 @@ assignment_statement
           err("invalid lvalue '%s' in assignment", $1);
         
         array_type = ignore_array[get_type(idx)];
-        $<i>$ = idx;
+        array_idx = idx;
       }
     array _SEMICOLON
       {
-        int arr_len = get_atr2($<i>3);
+        int arr_len = get_atr2(array_idx);
 
         if(arr_len != num_of_elements)
           err("array length is %d, %d elements given", arr_len, num_of_elements);
-      
-        // TODO: assign values
       }
     
   ;
@@ -235,18 +249,20 @@ array
   ;
 
 array_values
-  : literal // TODO: try with exp instead of literal to support things like { a, f(5), 5 }
+  : literal
       { 
         if(get_type($1) != array_type) {
           err("invalid element type");
         }
-        num_of_elements += 1; 
+        gen_mov_offset($1, array_idx, 0, num_of_elements);
+        num_of_elements += 1;
       }
   | array_values _COMMA literal
       { 
         if(get_type($3) != array_type) {
           err("invalid element type");
         }
+        gen_mov_offset($3, array_idx, 0, num_of_elements);
         num_of_elements += 1; 
       }
   ;
@@ -301,6 +317,7 @@ exp
         if(atoi($3) >= arr_len)
           err("index out of bounds: %d > %d", atoi($3), arr_len - 1);
 
+        offset = atoi($3);
         $$ = idx;
       }
   ;
@@ -387,9 +404,14 @@ rel_exp
 return_statement
   : _RETURN num_exp _SEMICOLON
       {
-        if(get_type(fun_idx) != get_type($2))
+        if(get_type(fun_idx) != ignore_array[get_type($2)])
           err("incompatible types in return");
-        gen_mov($2, FUN_REG);
+
+        if(is_array[get_type($2)])
+          gen_mov_offset($2, FUN_REG, offset, 0);
+        else
+          gen_mov($2, FUN_REG);
+        
         code("\n\t\tJMP \t@%s_exit", get_name(fun_idx));        
       }
   ;

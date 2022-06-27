@@ -1,8 +1,8 @@
 //OPIS: dodela vrednosti elementu niza
-//RETURN: 0
+//RETURN: 104
 int main() {
     int niz[7];
-    niz = { 3, 1, 4, 1, 5, 9, 2 };
+    niz = { 101, 102, 103, 104, 105, 106, 107 };
     
-    return 0;
+    return niz[3];
 }

@@ -1,4 +1,4 @@
-//OPIS: pristup elementu niza preko indeksa (bez codegen)
+//OPIS: pristup elementu niza preko indeksa
 //RETURN: 6
 int main() {
     int a;
@@ -15,6 +15,5 @@ int main() {
 
     d = a + b + c;
 
-    // return d;
-    return 6;
+    return d;
 }

@@ -1,4 +1,4 @@
-//OPIS: for each petlja sa continue  (bez codegen)
+//OPIS: for each petlja sa continue
 //RETURN: 23
 int main() {
     int d;
@@ -8,10 +8,10 @@ int main() {
     
     d = 0;
     foreach (int e : niz) {
-        continue;
+        if (e == 1)
+            continue;
         d = d + e;
     }
 
-    // return d;
-    return 23;
+    return d;
 }
