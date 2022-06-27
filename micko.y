@@ -16,6 +16,7 @@
   int error_count = 0;
   int warning_count = 0;
   int var_num = 0;
+  int foreach_num = 0;
   int fun_idx = -1;
   int fcall_idx = -1;
   int lab_num = -1;
@@ -28,6 +29,10 @@
   int num_of_elements = 0; // number of given elements when assigning values to an array
   int array_type = 0;
   int inside_foreach = 0;
+  int iter_var_idx = -1;
+  int iter_index_reg_idx = -1; // register for storing current index for iteration
+  int iter_max_reg_idx = -1; // register for storing max index for iteration (array size - 1)
+  // int iter_val_reg_idx = -1; // register for storing the value of the accessed element
   FILE *output;
 %}
 
@@ -426,19 +431,44 @@ foreach_statement
       }
   _COLON _ID
       {
-        int idx = lookup_symbol($7, VAR|PAR);
+        int idx = lookup_symbol($7, VAR |PAR);
         if (idx == NO_INDEX)
           err("array '%s' is not defined", $7);
         else
           if($3 != ignore_array[get_type(idx)] ||
              get_type(idx) != force_array[$3])
             err("incompatible types in foreach statement");
-          else
-            $<i>$ = insert_symbol($4, VAR, $3, 1, NO_ATR);
+          else {
+            iter_var_idx = insert_symbol($4, VAR, $3, 1, NO_ATR);
+            
+            iter_index_reg_idx = take_reg();
+            set_type(iter_index_reg_idx, INT);
+
+            iter_max_reg_idx = take_reg();
+            set_type(iter_max_reg_idx, INT);
+
+            code("\n\t\tMOV \t$0,");
+            gen_sym_name(iter_index_reg_idx);
+
+            code("\n\t\tMOV \t$%d,", get_atr2(idx) - 1);
+            gen_sym_name(iter_max_reg_idx);;
+
+            code("\n@foreach%d:", ++foreach_num);
+            code("\n\t\tADDS\t");
+            gen_sym_name(iter_index_reg_idx);
+            code(",$1,");
+            gen_sym_name(iter_index_reg_idx);
+          }
       }
   _RPAREN compound_statement
       {
-        clear_symbols($<i>8);
+        gen_cmp(iter_index_reg_idx, iter_max_reg_idx);
+        code("\n\t\tJLES \t@foreach%d", foreach_num);
+        code("\n@break%d:", foreach_num);
+        clear_symbols(iter_var_idx);
+
+        iter_var_idx = -1;
+        
         inside_foreach = 0;
       }
   ;
@@ -448,7 +478,9 @@ break_statement
     {
       if(!inside_foreach)
         err("break statement outside foreach");
-    } 
+      else
+        code("\n\t\tJMP \t@break%d", foreach_num);
+    }
   _BREAK _SEMICOLON
   ;
 
@@ -457,6 +489,8 @@ continue_statement
     {
       if(!inside_foreach)
         err("continue statement outside foreach");
+      else
+        code("\n\t\tJMP \t@foreach%d", foreach_num);
     }
   _CONTINUE _SEMICOLON
   ;

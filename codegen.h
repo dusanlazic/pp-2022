@@ -19,6 +19,7 @@ void gen_cmp(int operand1_index, int operand2_index);
 // generise MOV naredbu, parametri su indeksi operanada u TS-a 
 void gen_mov(int input_index, int output_index);
 
+// prima dodatne parametre za pomeraj indkesa operanada
 void gen_mov_offset(int input_index, int output_index, int input_offset, int output_offset);
 
 #endif
